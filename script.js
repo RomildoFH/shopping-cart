@@ -6,8 +6,19 @@
 const itemsSection = document.getElementsByClassName('items')[0];
 // console.log(itemsSection);
 const carrinho = document.getElementsByClassName('cart__items')[0];
-console.log(carrinho);
+// console.log(carrinho);
 // Fique a vontade para modificar o código já escrito e criar suas próprias funções!
+
+const cartItemClickListener = (event) => {
+  const listaCart = document.querySelector('ol');
+  const itemToRemove = event.target;
+  itemToRemove.id = 'remover';
+  const elemento = document.getElementById('remover');
+  if (elemento.parentNode) {
+    elemento.parentNode.removeChild(elemento);
+  }
+  return listaCart;
+};
 
 /**
  * Função responsável por criar e retornar um item do carrinho.
@@ -21,7 +32,9 @@ console.log(carrinho);
   const li = document.createElement('li');
   li.className = 'cart__item';
   li.innerText = `ID: ${id} | TITLE: ${title} | PRICE: $${price}`;
-  // li.addEventListener('click', cartItemClickListener);
+  li.addEventListener('click', function (event) {
+    cartItemClickListener(event);
+  });
   return li;
 };
 
