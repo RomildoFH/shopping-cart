@@ -5,7 +5,7 @@ const fetchItem = async (itemID) => {
   // console.log(data);
   return data;
 };
-// fetchItem('MLB1341706310');
+fetchItem('MLB1341706310');
 
 if (typeof module !== 'undefined') {
   module.exports = {
