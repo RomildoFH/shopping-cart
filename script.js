@@ -13,6 +13,7 @@ const cartItemClickListener = (event) => {
   const listaCart = document.querySelector('ol');
   const itemToRemove = event.target;
   itemToRemove.id = 'remover';
+  // https://developer.mozilla.org/pt-BR/docs/Web/API/Node/removeChild
   const elemento = document.getElementById('remover');
   if (elemento.parentNode) {
     elemento.parentNode.removeChild(elemento);
