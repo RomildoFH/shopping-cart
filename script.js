@@ -144,7 +144,15 @@ const objetoAdicionar = async () => {
 };
 // objetoAdicionar();
 
+const loadingFunction = () => {
+  const loadParagraph = document.createElement('p');
+  loadParagraph.classList = 'loading';
+  loadParagraph.innerText = 'carregando...';
+  itemsSection.appendChild(loadParagraph);
+};
+
 const criarLista = async (end) => {
+  loadingFunction();
   const objeto = await fetchProducts(end);
   const arrayItems = objeto.results;
   // console.log(arrayItems);
@@ -152,6 +160,7 @@ const criarLista = async (end) => {
     itemsSection.appendChild(createProductItemElement(item));
   });
   await objetoAdicionar();
+  document.querySelector('.loading').remove();
 };
 
 /**
@@ -161,7 +170,7 @@ const criarLista = async (end) => {
  */
 const getIdFromProductItem = (product) => product.querySelector('span.id').innerText;
 
-window.onload = () => { 
+window.onload = () => {
   criarLista('item');
   carregaLista();
   clearFunction();
