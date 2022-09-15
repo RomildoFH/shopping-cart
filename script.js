@@ -32,7 +32,7 @@ const getCartItemsPrices = () => {
   });
   return (arrayPrices);
 };
-
+// https://stackoverflow.com/questions/3163070/javascript-displaying-a-float-to-2-decimal-places
 function round(value, decimals) {
   return Number(`${Math.round(`${value}e${decimals}`)}e-${decimals}`);
 }
