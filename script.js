@@ -1,13 +1,28 @@
 // Esse tipo de comentário que estão antes de todas as funções são chamados de JSdoc,
 // experimente passar o mouse sobre o nome das funções e verá que elas possuem descrições! 
 
+// const saveCartItems = require("./helpers/saveCartItems");
+
 // const { fetchItem } = require("./helpers/fetchItem");
 
 const itemsSection = document.getElementsByClassName('items')[0];
 // console.log(itemsSection);
 const carrinho = document.getElementsByClassName('cart__items')[0];
 // console.log(carrinho);
+
+const lista = document.querySelector('.cart__items');
+const savedItems = getSavedCartItems();
+
 // Fique a vontade para modificar o código já escrito e criar suas próprias funções!
+
+const getClickedItem = () => {
+  const arrayLi = [];
+  for (let index = 0; index < carrinho.childNodes.length; index += 1) {
+    arrayLi.push(carrinho.childNodes[index].innerText);
+  }
+  console.log(arrayLi);
+  saveCartItems(arrayLi);
+};
 
 const cartItemClickListener = (event) => {
   const listaCart = document.querySelector('ol');
@@ -17,8 +32,24 @@ const cartItemClickListener = (event) => {
   const elemento = document.getElementById('remover');
   if (elemento.parentNode) {
     elemento.parentNode.removeChild(elemento);
+    getClickedItem();
   }
   return listaCart;
+};
+
+const carregaLista = () => {
+  if (localStorage.cartItems) {
+    const arrayItems = savedItems.split(',');
+    for (let index = 0; index < arrayItems.length; index += 1) {
+      const li = document.createElement('li');
+      li.className = 'cart__item';
+      li.innerText = `${arrayItems[index]}`;
+      li.addEventListener('click', function (event) {
+      cartItemClickListener(event);
+      });
+      lista.appendChild(li);
+    }
+  }
 };
 
 /**
@@ -94,6 +125,8 @@ const objetoAdicionar = async () => {
       // console.log(idTarget);
       const objeto = await fetchItem(idTarget);    
       carrinho.appendChild(createCartItemElement(objeto));
+      // saveCartItems(createCartItemElement(objeto));
+      getClickedItem();
     });
   });
 };
@@ -118,4 +151,5 @@ const getIdFromProductItem = (product) => product.querySelector('span.id').inner
 
 window.onload = () => { 
   criarLista('item');
+  carregaLista();
 };
