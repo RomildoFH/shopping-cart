@@ -19,29 +19,17 @@ const btnClear = document.getElementsByClassName('empty-cart')[0];
 
 const subtotalDiv = document.querySelector('.subtotal');
 
-const getCartItemsIDs = () => {
+// ------------------------------------------------------------
+// Refatorando o código referente ao total price para obedecer o lint
+const getCartItemsPrices = () => {
   const lis = document.querySelectorAll('.cart__item');
   // console.log(lis);
-  const arrayIDs = [];
+  const arrayPrices = [];
   lis.forEach((element) => {    
-    arrayIDs.push(element.innerText.split(' ')[1]);
+    const string = element.innerText.split('$')[1];
+    const number = parseFloat(string.replace(',', '.'));
+    arrayPrices.push(number);
   });
-  return (arrayIDs);
-};
-
-const getProductsPrice = async () => {
-  const arrayPrices = [];  
-  const arrayIds = getCartItemsIDs();
-  // console.log(arrayIds);
-  // https://stackoverflow.com/questions/37576685/using-async-await-with-a-foreach-loop
-  for (const index of arrayIds) {
-    const url = `https://api.mercadolibre.com/items/${index}`;
-    // console.log(url);
-    const promessa = await fetch(url);
-    const data = await promessa.json();
-    const price = await data.price;
-    arrayPrices.push(price);
-  }
   return (arrayPrices);
 };
 
@@ -49,8 +37,8 @@ function round(value, decimals) {
   return Number(`${Math.round(`${value}e${decimals}`)}e-${decimals}`);
 }
 
-const getTotalPrice = async () => {
-  const arrayPrices = await getProductsPrice();
+const getTotalPrice = () => {
+  const arrayPrices = getCartItemsPrices();
   let totalPrice = 0;
   for (let index = 0; index < arrayPrices.length; index += 1) {
     totalPrice += arrayPrices[index];
@@ -59,8 +47,8 @@ const getTotalPrice = async () => {
   return (totalPrice);
 };
 
-const totalPrice = async () => {
-  const price = await getTotalPrice();
+const totalPrice = () => {
+  const price = getTotalPrice();
   if (document.querySelector('.total-price')) {
     document.querySelector('.total-price').remove();
   }
@@ -69,6 +57,7 @@ const totalPrice = async () => {
   paragraph.innerText = `Total price: ${price}`;
   subtotalDiv.appendChild(paragraph);
 };
+// ------------------------------------------------------------
 
 const getClickedItem = () => {
   const arrayLi = [];
