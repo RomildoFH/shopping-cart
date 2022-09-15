@@ -45,12 +45,16 @@ const getProductsPrice = async () => {
   return (arrayPrices);
 };
 
+function round(value, decimals) {
+  return Number(`${Math.round(`${value}e${decimals}`)}e-${decimals}`);
+}
+
 const getTotalPrice = async () => {
   const arrayPrices = await getProductsPrice();
   let totalPrice = 0;
   for (let index = 0; index < arrayPrices.length; index += 1) {
     totalPrice += arrayPrices[index];
-    totalPrice = Math.round(totalPrice);
+    totalPrice = round(totalPrice, 2);
   }
   return (totalPrice);
 };
