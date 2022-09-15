@@ -17,6 +17,55 @@ const savedItems = getSavedCartItems();
 
 const btnClear = document.getElementsByClassName('empty-cart')[0];
 
+const subtotalDiv = document.querySelector('.subtotal');
+
+const getCartItemsIDs = () => {
+  const lis = document.querySelectorAll('.cart__item');
+  // console.log(lis);
+  const arrayIDs = [];
+  lis.forEach((element) => {    
+    arrayIDs.push(element.innerText.split(' ')[1]);
+  });
+  return (arrayIDs);
+};
+
+const getProductsPrice = async () => {
+  const arrayPrices = [];  
+  const arrayIds = getCartItemsIDs();
+  // console.log(arrayIds);
+  // https://stackoverflow.com/questions/37576685/using-async-await-with-a-foreach-loop
+  for (const index of arrayIds) {
+    const url = `https://api.mercadolibre.com/items/${index}`;
+    // console.log(url);
+    const promessa = await fetch(url);
+    const data = await promessa.json();
+    const price = await data.price;
+    arrayPrices.push(price);
+  }
+  return (arrayPrices);
+};
+
+const getTotalPrice = async () => {
+  const arrayPrices = await getProductsPrice();
+  let totalPrice = 0;
+  for (let index = 0; index < arrayPrices.length; index += 1) {
+    totalPrice += arrayPrices[index];
+    totalPrice = Math.round(totalPrice);
+  }
+  return (totalPrice);
+};
+
+const totalPrice = async () => {
+  const price = await getTotalPrice();
+  if (document.querySelector('.total-price')) {
+    document.querySelector('.total-price').remove();
+  }
+  const paragraph = document.createElement('p');
+  paragraph.classList = 'total-price';
+  paragraph.innerText = `Total price: ${price}`;
+  subtotalDiv.appendChild(paragraph);
+};
+
 const getClickedItem = () => {
   const arrayLi = [];
   for (let index = 0; index < carrinho.childNodes.length; index += 1) {
@@ -26,17 +75,7 @@ const getClickedItem = () => {
   saveCartItems(arrayLi);
 };
 
-const clearFunction = () => {
-  btnClear.addEventListener('click', () => {
-    // alert('funfo');
-    while (carrinho.childNodes.length > 0) {
-      carrinho.removeChild(carrinho.firstChild);
-    }
-    getClickedItem();
-  });
-};
-
-const cartItemClickListener = (event) => {
+const cartItemClickListener = async (event) => {
   const listaCart = document.querySelector('ol');
   const itemToRemove = event.target;
   itemToRemove.id = 'remover';
@@ -46,6 +85,7 @@ const cartItemClickListener = (event) => {
     elemento.parentNode.removeChild(elemento);
     getClickedItem();
   }
+  await totalPrice();
   return listaCart;
 };
 
@@ -139,6 +179,7 @@ const objetoAdicionar = async () => {
       carrinho.appendChild(createCartItemElement(objeto));
       // saveCartItems(createCartItemElement(objeto));
       getClickedItem();
+      await totalPrice();
     });
   });
 };
@@ -170,8 +211,20 @@ const criarLista = async (end) => {
  */
 const getIdFromProductItem = (product) => product.querySelector('span.id').innerText;
 
-window.onload = () => {
+const clearFunction = () => {
+  btnClear.addEventListener('click', async () => {
+    // alert('funfo');
+    while (carrinho.childNodes.length > 0) {
+      carrinho.removeChild(carrinho.firstChild);
+    }
+    getClickedItem();
+    await totalPrice();
+  });
+};
+
+window.onload = async () => {
   criarLista('item');
   carregaLista();
   clearFunction();
+  await totalPrice();
 };
