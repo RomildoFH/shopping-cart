@@ -17,7 +17,7 @@
     <script src="script.js" defer></script>
   </head>
   <body>
-    <header class="header">
+    <header class="header" id="header">
       <div class="container-title">
         <span class="title"><strong>trybe</strong>shopping</span>
       </div>
@@ -26,13 +26,21 @@
         <span class="cart__title">Meu carrinho</span>
       </div>
     </header>
-    <section class="container">
-      <section class="items"></section>
-      <section class="cart">
-        <ol class="cart__items"></ol>
-        <div class="subtotal"></div>
-        <button class="empty-cart">Esvaziar carrinho</button>
-      </section>
+    <!-- <button ><a id="move-up" href="#header">&#9757;</a></button> -->
+    <button id="move-up">&#9757;</button>
+    <section class="container-big">
+      <div class="container-search">
+        <input type="search" name="" id="search">
+        <button id="btn-search">Procurar</button>
+      </div>
+      <div class="container">
+        <section class="items"></section>
+        <section class="cart">
+          <ol class="cart__items"></ol>
+          <div class="subtotal"></div>
+          <button class="empty-cart">Esvaziar carrinho</button>
+        </section>
+      </div>
     </section>
   </body>
 </html>

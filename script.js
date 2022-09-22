@@ -13,14 +13,110 @@ const carrinho = document.getElementsByClassName('cart__items')[0];
 // console.log(carrinho);
 
 const lista = document.querySelector('.cart__items');
+
 const savedItems = getSavedCartItems();
 
 const btnClear = document.getElementsByClassName('empty-cart')[0];
 
 const subtotalDiv = document.querySelector('.subtotal');
 
+const searchImput = document.getElementById('search');
+
+const btnSearch = document.getElementById('btn-search');
+
+const moveTop = document.getElementById('move-up');
+
+const header = document.getElementById('header');
+
+const cartIcon = document.getElementsByClassName('material-icons')[0];
+
+const cartContainer = document.querySelector('.cart');
+
+const cartTitle = document.querySelector('.container-cartTitle');
+
+// ------------------------------------------------------------
+// Utilizando o for of e o async para realizar o somatório de todos os preços de forma assíncrona
+// const getCartItemsIDs = () => {
+//   const lis = document.querySelectorAll('.cart__item');
+//   // console.log(lis);
+//   const arrayIDs = [];
+//   lis.forEach((element) => {    
+//     arrayIDs.push(element.innerText.split(' ')[1]);
+//   });
+//   return (arrayIDs);
+// };
+
+// const getProductsPrice = async () => {
+//   const arrayPrices = [];  
+//   const arrayIds = getCartItemsIDs();
+//   // console.log(arrayIds);
+//   // https://stackoverflow.com/questions/37576685/using-async-await-with-a-foreach-loop
+//   for (const index of arrayIds) {
+//     const url = `https://api.mercadolibre.com/items/${index}`;
+//     // console.log(url);
+//     const promessa = await fetch(url);
+//     const data = await promessa.json();
+//     const price = await data.price;
+//     arrayPrices.push(price);
+//   }
+//   return (arrayPrices);
+// };
+
+// function round(value, decimals) {
+//   return Number(`${Math.round(`${value}e${decimals}`)}e-${decimals}`);
+// }
+
+// const getTotalPrice = async () => {
+//   const arrayPrices = await getProductsPrice();
+//   let totalPrice = 0;
+//   for (let index = 0; index < arrayPrices.length; index += 1) {
+//     totalPrice += arrayPrices[index];
+//     totalPrice = round(totalPrice, 2);
+//   }
+//   return (totalPrice);
+// };
+
+// const totalPrice = async () => {
+//   const price = await getTotalPrice();
+//   if (document.querySelector('.total-price')) {
+//     document.querySelector('.total-price').remove();
+//   }
+//   const paragraph = document.createElement('p');
+//   paragraph.classList = 'total-price';
+//   paragraph.innerText = `Total price: ${price}`;
+//   subtotalDiv.appendChild(paragraph);
+// };
+// ------------------------------------------------------------
+
 // ------------------------------------------------------------
 // Refatorando o código referente ao total price para obedecer o lint
+
+const hideMenu = () => {
+  cartIcon.addEventListener('click', () => {
+    const classModify = 'close-cart-items';
+    cartContainer.classList.toggle(classModify);
+    cartTitle.classList.toggle(classModify);
+    if (cartTitle.classList.contains(classModify)) {
+      setTimeout(() => {
+        cartContainer.style.display = 'none';
+        cartTitle.style.display = 'none';
+      }, 200);
+    } else {
+      setTimeout(() => {
+        cartContainer.style.display = 'flex';
+        cartTitle.style.display = 'flex';                
+      }, 200);
+    }
+  });
+};
+hideMenu();
+
+const moveUp = () => {
+  moveTop.addEventListener(('click'), () => {
+    header.scrollIntoView({ behavior: 'smooth' });
+  });
+};
+
 const getCartItemsPrices = () => {
   const lis = document.querySelectorAll('.cart__item');
   // console.log(lis);
@@ -62,7 +158,11 @@ const totalPrice = () => {
 const getClickedItem = () => {
   const arrayLi = [];
   for (let index = 0; index < carrinho.childNodes.length; index += 1) {
-    arrayLi.push(carrinho.childNodes[index].innerText);
+    if (index > 0) {
+    arrayLi.push(`%${carrinho.childNodes[index].innerText}`);
+    } else {
+      arrayLi.push(`${carrinho.childNodes[index].innerText}`);
+    }
   }
   // console.log(arrayLi);
   saveCartItems(arrayLi);
@@ -70,8 +170,9 @@ const getClickedItem = () => {
 
 const cartItemClickListener = async (event) => {
   const listaCart = document.querySelector('ol');
-  const itemToRemove = event.target;
+  const itemToRemove = event.target.parentNode;
   itemToRemove.id = 'remover';
+  // console.log(event.target);
   // https://developer.mozilla.org/pt-BR/docs/Web/API/Node/removeChild
   const elemento = document.getElementById('remover');
   if (elemento.parentNode) {
@@ -82,17 +183,38 @@ const cartItemClickListener = async (event) => {
   return listaCart;
 };
 
+const liContainer = (objeto) => {
+  const liCont = document.createElement('div');
+  liCont.className = 'cartItem-div';
+  liCont.id = `li-${objeto.id}`;
+  return liCont;
+};
+
+const liContainerSaved = (id) => {
+  const liCont = document.createElement('div');
+  liCont.className = 'cartItem-div';
+  liCont.id = `li-${id}`;
+  return liCont;
+};
+
+const liTextSaved = (string) => {
+  const li = document.createElement('li');
+    li.className = 'cart__item';
+    li.innerText = `${string}`;
+    li.addEventListener('click', function (event) {
+    cartItemClickListener(event);
+  });
+  return li;
+};
+
 const carregaLista = () => {
   if (localStorage.cartItems) {
-    const arrayItems = savedItems.split(',');
-    for (let index = 0; index < arrayItems.length; index += 1) {
-      const li = document.createElement('li');
-      li.className = 'cart__item';
-      li.innerText = `${arrayItems[index]}`;
-      li.addEventListener('click', function (event) {
-      cartItemClickListener(event);
-      });
-      lista.appendChild(li);
+    const arrayItems = savedItems.split(',%');
+    for (let index = 0; index < arrayItems.length; index += 1) {      
+      const id = arrayItems[index].split(' ')[1];
+      const divContainer = liContainerSaved(id);            
+      lista.appendChild(divContainer);
+      divContainer.appendChild(liTextSaved(arrayItems[index]));
     }
   }
 };
@@ -105,13 +227,24 @@ const carregaLista = () => {
  * @param {string} product.price - Preço do produto.
  * @returns {Element} Elemento de um item do carrinho.
  */
- const createCartItemElement = ({ id, title, price }) => {
+
+const creatCartItemImg = ({ thumbnail }) => {
+  const imageContainer = document.createElement('img');
+  imageContainer.src = thumbnail;
+  imageContainer.className = 'img-cartItem';
+  return imageContainer;
+};
+
+ const createCartItemElement = ({ id, title, price, thumbnail }) => {
+  // const div = document.createElement('div');
   const li = document.createElement('li');
   li.className = 'cart__item';
-  li.innerText = `ID: ${id} | TITLE: ${title} | PRICE: $${price}`;
+  li.innerHTML = `ID: ${id} | TITLE: ${title} | PRICE: $${price}`;
   li.addEventListener('click', function (event) {
     cartItemClickListener(event);
   });
+  // div.appendChild(creatCartItemImg(thumbnail));
+  // div.appendChild(li);
   return li;
 };
 
@@ -167,10 +300,13 @@ const objetoAdicionar = async () => {
     btn.addEventListener('click', async (event) => {
       // console.log(event.target);
       const idTarget = event.target.parentElement.firstChild.innerText;
-      // console.log(idTarget);
-      const objeto = await fetchItem(idTarget);    
-      carrinho.appendChild(createCartItemElement(objeto));
-      // saveCartItems(createCartItemElement(objeto));
+      console.log(idTarget);
+      const objeto = await fetchItem(idTarget);  
+      console.log(objeto); 
+      const divitem = carrinho.appendChild(liContainer(objeto));
+      divitem.appendChild(creatCartItemImg(objeto)); 
+      divitem.appendChild(createCartItemElement(objeto));
+      saveCartItems(createCartItemElement(objeto));
       getClickedItem();
       await totalPrice();
     });
@@ -185,7 +321,14 @@ const loadingFunction = () => {
   itemsSection.appendChild(loadParagraph);
 };
 
+const clearProducts = () => {
+  while (itemsSection.childNodes.length > 0) {
+    itemsSection.removeChild(itemsSection.firstChild);
+  }
+};
+
 const criarLista = async (end) => {
+  clearProducts();
   loadingFunction();
   const objeto = await fetchProducts(end);
   const arrayItems = objeto.results;
@@ -194,7 +337,15 @@ const criarLista = async (end) => {
     itemsSection.appendChild(createProductItemElement(item));
   });
   await objetoAdicionar();
+  await totalPrice();
   document.querySelector('.loading').remove();
+};
+
+const searchProduct = () => {
+  btnSearch.addEventListener('click', () => {
+    const valorBuscado = (searchImput.value).toLowerCase();
+    criarLista(valorBuscado);
+  });
 };
 
 /**
@@ -216,8 +367,10 @@ const clearFunction = () => {
 };
 
 window.onload = async () => {
-  criarLista('item');
-  carregaLista();
+  criarLista();
+  await carregaLista();
   clearFunction();
+  searchProduct();
+  moveUp();
   await totalPrice();
 };
