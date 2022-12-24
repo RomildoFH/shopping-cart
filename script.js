@@ -39,13 +39,15 @@ const moveUp = () => {
 };
 
 const getCartItemsPrices = () => {
-  const lis = document.querySelectorAll('.cart__item');
-  const arrayPrices = [];
-  lis.forEach((element) => {    
-    const string = element.innerText.split('$')[1];
-    const number = parseFloat(string.replace(',', '.'));
-    arrayPrices.push(number);
-  });
+  let arrayPrices = [];
+  const savedCartItems = JSON.parse(localStorage.getItem('cartItems'));
+  if (savedCartItems !== null) {
+    if (savedCartItems.length > 0) {
+      arrayPrices = savedCartItems.map((element) => (element.price));
+    }
+  } else {
+    arrayPrices = [];
+  }
   return (arrayPrices);
 };
 // https://stackoverflow.com/questions/3163070/javascript-displaying-a-float-to-2-decimal-places
@@ -74,30 +76,34 @@ const totalPrice = () => {
   subtotalDiv.appendChild(paragraph);
 };
 // Essa função adiciona os itens no localstorage
-const getClickedItem = () => {
-  const arrayLi = [];
+const getClickedItem = (objeto) => {
+  const savedInCart = JSON.parse(localStorage.getItem('cartItems'));
+  let arrayLi = savedInCart !== null ? savedInCart : [];
   for (let index = 0; index < carrinho.childNodes.length; index += 1) {
     if (index > 0) {
-    arrayLi.push(`%${carrinho.childNodes[index].innerHTML}`);
+    arrayLi = [...savedInCart, objeto];
     } else {
-      arrayLi.push(`${carrinho.childNodes[index].innerHTML}`);
+      arrayLi = [objeto];
     }
   }
-  console.log(arrayLi);
-  saveCartItems(arrayLi);
+  saveCartItems(JSON.stringify(arrayLi));
 };
 
-const cartItemClickListener = async (event) => {
+const cartItemClickListener = async (event, objeto) => {
   const listaCart = document.querySelector('ol');
   const itemToRemove = event.target.parentNode;
   itemToRemove.id = 'remover';
   // https://developer.mozilla.org/pt-BR/docs/Web/API/Node/removeChild
   const elemento = document.getElementById('remover');
+  const divToRemore = elemento.parentNode;
+  const savedCartItems = JSON.parse(localStorage.getItem('cartItems'));
   if (elemento.parentNode) {
-    elemento.parentNode.removeChild(elemento);
-    getClickedItem();
+    divToRemore.parentNode.removeChild(divToRemore);
+    console.log(objeto);
+    localStorage.setItem('cartItems', JSON.stringify(savedCartItems
+      .filter((element) => (element.id !== objeto.id))));
   }
-  await totalPrice();
+  totalPrice();
   return listaCart;
 };
 
@@ -108,29 +114,41 @@ const liContainer = (objeto) => {
   return liCont;
 };
 
-const liContainerSaved = (id) => {
+const liContainerSaved = ({ id, img }) => {
   const liCont = document.createElement('div');
+  const image = document.createElement('img');
+  image.src = img;
   liCont.className = 'cartItem-div';
   liCont.id = `li-${id}`;
+  liCont.appendChild(image);
   return liCont;
 };
 
-const liTextSaved = (string) => {
+const liTextSaved = (objeto) => {
+  const { title, id, price } = objeto;
+  const liTitle = document.createElement('p');
+  liTitle.innerText = title;
+  const liId = document.createElement('span');
+  liId.innerText = `ID: ${id}`;
+  const liPrice = document.createElement('span');
+  liPrice.innerText = `$: ${price}`;
   const li = document.createElement('li');
-    li.className = 'cart__item';
-    li.innerText = `${string}`;
-    li.addEventListener('click', function (event) {
-    cartItemClickListener(event);
+  li.className = 'cart__item';
+  li.appendChild(liTitle);
+  li.appendChild(liId);
+  li.appendChild(liPrice);
+  li.addEventListener('click', function (event) {
+    cartItemClickListener(event, objeto);
   });
   return li;
 };
 
 const carregaLista = () => {
-  if (localStorage.cartItems) {
-    const arrayItems = savedItems.split(',%');
+  if (localStorage.getItem('cartItems') !== null) {
+    const arrayItems = JSON.parse(savedItems);
     for (let index = 0; index < arrayItems.length; index += 1) {      
-      const item = arrayItems[index].split(' ');
-      const divContainer = liContainerSaved(item);            
+      const item = arrayItems[index];
+      const divContainer = liContainerSaved(item);
       lista.appendChild(divContainer);
       divContainer.appendChild(liTextSaved(arrayItems[index]));
     }
@@ -144,12 +162,21 @@ const creatCartItemImg = (objeto) => {
   return imageContainer;
 };
 
- const createCartItemElement = ({ id, title, price }) => {
+ const createCartItemElement = (objeto) => {
+  const { id, title, price } = objeto;
+  const liTitle = document.createElement('p');
+  liTitle.innerText = title;
+  const liId = document.createElement('span');
+  liId.innerText = `ID: ${id}`;
+  const liPrice = document.createElement('span');
+  liPrice.innerText = `PRICE: $${price}`;
   const li = document.createElement('li');
   li.className = 'cart__item';
-  li.innerHTML = `ID: ${id} | TITLE: ${title} | PRICE: $${price}`;
+  li.appendChild(liTitle);
+  li.appendChild(liId);
+  li.appendChild(liPrice);
   li.addEventListener('click', function (event) {
-    cartItemClickListener(event);
+    cartItemClickListener(event, objeto);
   });
   return li;
 };
@@ -195,13 +222,12 @@ const objetoAdicionar = async () => {
   arrayItemAdd.forEach(async (btn) => {
     btn.addEventListener('click', async (event) => {
       const idTarget = event.target.parentElement.firstChild.innerText;
-      const objeto = await fetchItem(idTarget);  
-      console.log(objeto); 
+      const objeto = await fetchItem(idTarget);
       const newObj = creatObjectItem(objeto);
       const divitem = carrinho.appendChild(liContainer(newObj));
       divitem.appendChild(creatCartItemImg(objeto)); 
       divitem.appendChild(createCartItemElement(newObj));
-      getClickedItem();
+      getClickedItem(newObj);
       totalPrice();
     });
   });
@@ -229,7 +255,7 @@ const criarLista = async (end) => {
     itemsSection.appendChild(createProductItemElement(item));
   });
   await objetoAdicionar();
-  await totalPrice();
+  totalPrice();
   document.querySelector('.loading').remove();
 };
 
@@ -241,20 +267,20 @@ const searchProduct = () => {
 };
 
 const clearFunction = () => {
-  btnClear.addEventListener('click', async () => {
+  btnClear.addEventListener('click', () => {
     while (carrinho.childNodes.length > 0) {
       carrinho.removeChild(carrinho.firstChild);
     }
-    getClickedItem();
-    await totalPrice();
+    localStorage.setItem('cartItems', '[]');
+    totalPrice();
   });
 };
 
-window.onload = async () => {
+window.onload = () => {
   criarLista();
-  await carregaLista();
+  carregaLista();
   clearFunction();
   searchProduct();
   moveUp();
-  await totalPrice();
+  totalPrice();
 };
