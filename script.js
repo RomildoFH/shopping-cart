@@ -7,7 +7,6 @@ const subtotalDiv = document.querySelector('.subtotal');
 const searchImput = document.getElementById('search');
 const btnSearch = document.getElementById('btn-search');
 const moveTop = document.getElementById('move-up');
-const header = document.getElementById('header');
 const cartIcon = document.getElementsByClassName('material-icons')[0];
 const cartContainer = document.querySelector('.cart');
 const cartTitle = document.querySelector('.container-cartTitle');
@@ -34,7 +33,7 @@ hideMenu();
 
 const moveUp = () => {
   moveTop.addEventListener(('click'), () => {
-    header.scrollIntoView({ behavior: 'smooth' });
+    itemsSection.scrollIntoView({ behavior: 'smooth' });
   });
 };
 
