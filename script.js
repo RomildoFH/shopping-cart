@@ -72,7 +72,7 @@ const totalPrice = () => {
   }
   const paragraph = document.createElement('p');
   paragraph.classList = 'total-price';
-  paragraph.innerText = `Total price: ${price}`;
+  paragraph.innerText = `TOTAL: ${price}`;
   subtotalDiv.appendChild(paragraph);
 };
 // Essa função adiciona os itens no localstorage
@@ -91,18 +91,19 @@ const getClickedItem = (objeto) => {
 
 const cartItemClickListener = async (event, objeto) => {
   const listaCart = document.querySelector('ol');
+  const savedCartItems = JSON.parse(localStorage.getItem('cartItems'));
+  let indexToRemove = 0;
+  savedCartItems.forEach((element, index) => {
+    indexToRemove = element.id === objeto.id ? index : 0;
+  });
   const itemToRemove = event.target.parentNode;
   itemToRemove.id = 'remover';
   // https://developer.mozilla.org/pt-BR/docs/Web/API/Node/removeChild
   const elemento = document.getElementById('remover');
-  const divToRemore = elemento.parentNode;
-  const savedCartItems = JSON.parse(localStorage.getItem('cartItems'));
-  if (elemento.parentNode) {
-    divToRemore.parentNode.removeChild(divToRemore);
-    console.log(objeto);
-    localStorage.setItem('cartItems', JSON.stringify(savedCartItems
-      .filter((element) => (element.id !== objeto.id))));
-  }
+  const divToRemove = elemento.parentNode;
+  divToRemove.parentNode.removeChild(divToRemove);
+  localStorage.setItem('cartItems', JSON.stringify(savedCartItems
+    .filter((element, index) => (index !== indexToRemove))));
   totalPrice();
   return listaCart;
 };
@@ -131,7 +132,7 @@ const liTextSaved = (objeto) => {
   const liId = document.createElement('span');
   liId.innerText = `ID: ${id}`;
   const liPrice = document.createElement('span');
-  liPrice.innerText = `$: ${price}`;
+  liPrice.innerText = `PREÇO: ${price}`;
   const li = document.createElement('li');
   li.className = 'cart__item';
   li.appendChild(liTitle);
@@ -169,7 +170,7 @@ const creatCartItemImg = (objeto) => {
   const liId = document.createElement('span');
   liId.innerText = `ID: ${id}`;
   const liPrice = document.createElement('span');
-  liPrice.innerText = `PRICE: $${price}`;
+  liPrice.innerText = `PREÇO: ${price}`;
   const li = document.createElement('li');
   li.className = 'cart__item';
   li.appendChild(liTitle);
@@ -195,13 +196,14 @@ const createCustomElement = (element, className, innerText) => {
   return e;
 };
 
-const createProductItemElement = ({ id, title, thumbnail }) => {
+const createProductItemElement = ({ id, title, thumbnail, price }) => {
   const section = document.createElement('section');
   section.className = 'item';
 
   section.appendChild(createCustomElement('span', 'item_id', id));
-  section.appendChild(createCustomElement('span', 'item__title', title));
   section.appendChild(createProductImageElement(thumbnail));
+  section.appendChild(createCustomElement('span', 'item__title', title));
+  section.appendChild(createCustomElement('span', 'item__price', `PREÇO ${price}`));
   section.appendChild(createCustomElement('button', 'item__add', 'Adicionar ao carrinho!'));
 
   return section;
